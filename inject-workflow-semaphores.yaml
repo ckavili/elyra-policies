@@ -1,0 +1,23 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: inject-parallelism-workflows
+spec:
+  rules:
+  - name: inject-parallelism-workflows
+    match:
+      any:
+      - resources:
+          kinds:
+          - Workflow
+    mutate:
+      foreach:
+      - list: "request.object.spec"
+        patchStrategicMerge:
+          spec:
+            synchronization:
+              semaphore:
+                configMapKeyRef:
+                  name: argo-semaphores
+                  key: workflow
